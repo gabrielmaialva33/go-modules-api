@@ -1,0 +1,137 @@
+openapi: 3.1.0
+info:
+  title: GoModule API
+  version: 0.0.1
+  description: |
+    ## About
+    This is the API documentation for the GoModule project. The API is used to manage the system's resources, such as users, products, and orders.
+
+    ## Authentication
+    The API uses JWT for authentication. To authenticate, you must send the `Authorization` header with the value `Bearer <token>`. The token is obtained by signing in to the system.
+
+    ### Postman Post-Request Script
+    You can use the following code to get a token in Postman:
+    ```js
+    var responseData = pm.response.json();
+    var token = responseData.auth.access_token;
+    pm.environment.set("bearerToken", token);
+    ```
+
+    <!-- ReDoc-Inject: <security-definitions> -->
+  x-logo:
+    url: ''
+    altText: Logo
+  contact:
+    name: Gabriel M.
+    email: gabrielmaialva33@gmail.com
+    url: https://github.com/gabrielmaialva33
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: http://localhost:3000
+    description: Local server
+tags:
+  - name: Health
+    description: Operations related to system health
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Check the health of the system
+      responses:
+        '200':
+          description: The system is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: The status of the system
+                    example: healthy
+        '500':
+          description: The system is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: The status of the system
+                    example: unhealthy
+        '503':
+          description: The system is unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: The status of the system
+                    example: unavailable
+components:
+  securitySchemes:
+    bearerToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    # errors
+    Unauthorized:
+      type: object
+      properties:
+        status:
+          type: number
+          description: The status code of the error.
+          example: 401
+        message:
+          type: string
+          description: The error message.
+          example: Invalid user credentials
+    NotFound:
+      type: object
+      properties:
+        status:
+          type: number
+          description: The status code of the error.
+          example: 404
+        message:
+          type: string
+          description: The error message.
+          example: Entity not found
+    UnprocessableEntity:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+                description: The error message.
+                example: The email has already been taken
+              rule:
+                type: string
+                description: The rule that was broken.
+                example: database.unique
+              field:
+                type: string
+                description: The field that caused the error.
+                example: email
+            example:
+              - {
+                'message': 'The email has already been taken',
+                'rule': 'database.unique',
+                'field': 'email',
+              }
+              - {
+                'message': 'The username has already been taken',
+                'rule': 'database.unique',
+                'field': 'username',
+              }
