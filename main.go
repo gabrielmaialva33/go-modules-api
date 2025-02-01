@@ -1,13 +1,26 @@
 package main
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"go-modules-api/config"
+	"go-modules-api/internal/server/http"
+	"go-modules-api/utils"
+
+	"go.uber.org/zap"
+)
 
 func main() {
-	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	utils.InitLogger()
+	log := utils.Logger
 
-	app.Listen(":3000")
+	logger := log.Named("main")
+	logger.Info("Starting the application")
+
+	config.Load(log)
+
+	logger.Info("server started", zap.Int("port", config.Env.AppPort))
+	logger.Sugar().Infof("server is running at %s", config.Env.AppHost)
+
+	s := http.NewServer(log)
+	s.Start()
 }
