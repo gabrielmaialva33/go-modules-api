@@ -2,8 +2,8 @@ package http
 
 import (
 	"fmt"
-
 	"go-modules-api/config"
+	"go-modules-api/internal/server/container"
 	"go-modules-api/internal/server/http/middleware"
 	"go-modules-api/internal/server/http/routes"
 
@@ -28,7 +28,9 @@ func NewServer(log *zap.Logger) *Server {
 
 	app.Static("/", "./docs")
 
-	routes.SetupRoutes(app, log)
+	appContainer := container.NewAppContainer()
+
+	routes.SetupRoutes(app, log, appContainer)
 
 	return &Server{
 		App: app,
