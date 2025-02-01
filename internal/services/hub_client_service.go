@@ -3,6 +3,7 @@ package services
 import (
 	"go-modules-api/internal/models"
 	"go-modules-api/internal/repositories"
+	"go-modules-api/utils"
 )
 
 // HubClientService defines business logic for hub clients
@@ -14,37 +15,37 @@ type HubClientService interface {
 	DeleteHubClient(id uint) error
 }
 
-// hubClientService implements HubClientService
 type hubClientService struct {
 	repo repositories.HubClientRepository
 }
 
-// NewHubClientService creates a new service instance
 func NewHubClientService(repo repositories.HubClientRepository) HubClientService {
 	return &hubClientService{repo: repo}
 }
 
 // GetAllHubClients returns all hub clients
 func (s *hubClientService) GetAllHubClients() ([]models.HubClient, error) {
-	return s.repo.GetAll()
+	clients, err := s.repo.GetAll()
+	return clients, utils.HandleDBError(err, "", nil)
 }
 
 // GetHubClientByID retrieves a hub client by ID
 func (s *hubClientService) GetHubClientByID(id uint) (*models.HubClient, error) {
-	return s.repo.GetByID(id)
+	client, err := s.repo.GetByID(id)
+	return client, utils.HandleDBError(err, "id", id, "Hub client not found")
 }
 
 // CreateHubClient creates a new hub client
 func (s *hubClientService) CreateHubClient(hubClient *models.HubClient) error {
-	return s.repo.Create(hubClient)
+	return utils.HandleDBError(s.repo.Create(hubClient), "external_id", hubClient.ExternalID)
 }
 
 // UpdateHubClient updates an existing hub client
 func (s *hubClientService) UpdateHubClient(hubClient *models.HubClient) error {
-	return s.repo.Update(hubClient)
+	return utils.HandleDBError(s.repo.Update(hubClient), "id", hubClient.ID, "Could not update hub client")
 }
 
 // DeleteHubClient removes a hub client
 func (s *hubClientService) DeleteHubClient(id uint) error {
-	return s.repo.Delete(id)
+	return utils.HandleDBError(s.repo.Delete(id), "id", id, "Could not delete hub client")
 }
