@@ -19,8 +19,9 @@ type Server struct {
 
 func NewServer(log *zap.Logger) *Server {
 	app := fiber.New(fiber.Config{
-		AppName:   "go-modules-api",
-		BodyLimit: 1024 * 1024 * 1024, // 1GB
+		AppName:      "go-modules-api",
+		BodyLimit:    1024 * 1024 * 1024, // 1GB
+		ErrorHandler: middleware.ErrorHandler,
 	})
 
 	app.Use(cors.New(cors.Config{
