@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"errors"
+	"go-modules-api/internal/exceptions"
 	"go-modules-api/internal/models"
 	"go-modules-api/internal/services"
 
@@ -12,7 +14,6 @@ type HubClientHandler struct {
 	service services.HubClientService
 }
 
-// NewHubClientHandler creates a new handler instance
 func NewHubClientHandler(service services.HubClientService) *HubClientHandler {
 	return &HubClientHandler{service: service}
 }
@@ -21,7 +22,7 @@ func NewHubClientHandler(service services.HubClientService) *HubClientHandler {
 func (h *HubClientHandler) GetAllHubClients(c *fiber.Ctx) error {
 	clients, err := h.service.GetAllHubClients()
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch hub clients"})
+		return err.(*exceptions.APIException).Response(c)
 	}
 	return c.JSON(clients)
 }
@@ -30,14 +31,12 @@ func (h *HubClientHandler) GetAllHubClients(c *fiber.Ctx) error {
 func (h *HubClientHandler) GetHubClientByID(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
+		return exceptions.BadRequest("Invalid ID format", fiber.Map{"field": "id", "value": c.Params("id")}).Response(c)
 	}
-
 	client, err := h.service.GetHubClientByID(uint(id))
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Hub client not found"})
+		return err.(*exceptions.APIException).Response(c)
 	}
-
 	return c.JSON(client)
 }
 
@@ -45,15 +44,15 @@ func (h *HubClientHandler) GetHubClientByID(c *fiber.Ctx) error {
 func (h *HubClientHandler) CreateHubClient(c *fiber.Ctx) error {
 	var client models.HubClient
 	if err := c.BodyParser(&client); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"error":   "bad_request",
-			"message": "Invalid request body",
-		})
+		return exceptions.BadRequest("Invalid request body", nil).Response(c)
 	}
 
 	if err := h.service.CreateHubClient(&client); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create hub client"})
+		var apiErr *exceptions.APIException
+		if errors.As(err, &apiErr) {
+			return apiErr.Response(c)
+		}
+		return exceptions.InternalServerError("An unexpected error occurred", nil).Response(c)
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(client)
@@ -63,17 +62,17 @@ func (h *HubClientHandler) CreateHubClient(c *fiber.Ctx) error {
 func (h *HubClientHandler) UpdateHubClient(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
+		return exceptions.BadRequest("Invalid ID format", fiber.Map{"field": "id", "value": c.Params("id")}).Response(c)
 	}
 
 	var client models.HubClient
 	if err := c.BodyParser(&client); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+		return exceptions.BadRequest("Invalid request body", nil).Response(c)
 	}
 
 	client.ID = uint(id)
 	if err := h.service.UpdateHubClient(&client); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update hub client"})
+		return err.(*exceptions.APIException).Response(c)
 	}
 
 	return c.JSON(client)
@@ -83,11 +82,11 @@ func (h *HubClientHandler) UpdateHubClient(c *fiber.Ctx) error {
 func (h *HubClientHandler) DeleteHubClient(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
+		return exceptions.BadRequest("Invalid ID format", fiber.Map{"field": "id", "value": c.Params("id")}).Response(c)
 	}
 
 	if err := h.service.DeleteHubClient(uint(id)); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete hub client"})
+		return err.(*exceptions.APIException).Response(c)
 	}
 
 	return c.SendStatus(fiber.StatusNoContent)
