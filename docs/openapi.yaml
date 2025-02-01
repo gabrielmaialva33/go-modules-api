@@ -34,46 +34,144 @@ servers:
 tags:
   - name: Health
     description: Operations related to system health
+  - name: HubClients
+    description: Operations related to hub clients
 paths:
-  /health:
+  /api/hub_clients:
     get:
       tags:
-        - Health
-      summary: Check the health of the system
+        - HubClients
+      summary: List all hub clients
+      description: |
+        Returns a list of all hub clients.
+      operationId: listHubClients
       responses:
         '200':
-          description: The system is healthy
+          description: A list of hub clients
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: The status of the system
-                    example: healthy
+                type: array
+                items:
+                  $ref: '#/components/schemas/HubClient'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+    post:
+      tags:
+        - HubClients
+      summary: Create a new hub client
+      description: Creates a new hub client in the system.
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+          example: application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubClientInput'
+      responses:
+        '201':
+          description: Hub client created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HubClient'
+        '400':
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
         '500':
-          description: The system is unhealthy
+          description: Failed to create the hub client.
+  /api/hub_clients/{id}:
+    get:
+      tags:
+        - HubClients
+      summary: Get hub client by ID
+      description: Retrieves the details of a specific hub client using its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the hub client.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Hub client details retrieved successfully.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: The status of the system
-                    example: unhealthy
-        '503':
-          description: The system is unavailable
+                $ref: '#/components/schemas/HubClient'
+        '400':
+          description: Invalid ID supplied.
+        '404':
+          description: Hub client not found.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: The status of the system
-                    example: unavailable
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Failed to retrieve the hub client.
+    put:
+      tags:
+        - HubClients
+      summary: Update a hub client
+      description: Updates the details of an existing hub client.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the hub client to update.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubClient'
+      responses:
+        '200':
+          description: Hub client updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HubClient'
+        '400':
+          description: Invalid request or ID.
+        '500':
+          description: Failed to update the hub client.
+    delete:
+      tags:
+        - HubClients
+      summary: Delete a hub client
+      description: Deletes a hub client with the given ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the hub client to delete.
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Hub client deleted successfully.
+        '400':
+          description: Invalid ID supplied.
+        '500':
+          description: Failed to delete the hub client.
 components:
   securitySchemes:
     bearerToken:
@@ -135,3 +233,46 @@ components:
                 'rule': 'database.unique',
                 'field': 'username',
               }
+
+    HubClient:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier for the hub client.
+          example: 1
+        name:
+          type: string
+          description: The name of the hub client.
+          example: "Client A"
+        created_at:
+          type: string
+          format: date-time
+          description: When the hub client was created.
+          example: "2025-02-01T18:08:26.599656-03:00"
+        updated_at:
+          type: string
+          format: date-time
+          description: When the hub client was last updated.
+          example: "2025-02-01T18:08:26.599656-03:00"
+      example: {
+        'id': 1,
+        'name': 'Client A',
+        'created_at': '2025-02-01T18:08:26.599656-03:00',
+        'updated_at': '2025-02-01T18:08:26.599656-03:00',
+      }
+    HubClientInput:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the hub client.
+          example: "Client A"
+        external_id:
+          type: integer
+          description: The external ID of the hub client.
+          example: 123
+      example: {
+        'name': 'Client A',
+        'external_id': 123,
+      }
