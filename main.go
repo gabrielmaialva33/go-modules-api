@@ -29,6 +29,11 @@ func main() {
 	logger.Info("server started", zap.Int("port", config.Env.AppPort))
 	logger.Sugar().Infof("server is running at %s", config.Env.AppHost)
 
+	config.ConnectDatabase()
+	if config.DB == nil {
+		log.Fatal("Database connection is not initialized")
+	}
+
 	s := http.NewServer(log)
 	s.Start()
 }
