@@ -45,7 +45,11 @@ func (h *HubClientHandler) GetHubClientByID(c *fiber.Ctx) error {
 func (h *HubClientHandler) CreateHubClient(c *fiber.Ctx) error {
 	var client models.HubClient
 	if err := c.BodyParser(&client); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"error":   "bad_request",
+			"message": "Invalid request body",
+		})
 	}
 
 	if err := h.service.CreateHubClient(&client); err != nil {
