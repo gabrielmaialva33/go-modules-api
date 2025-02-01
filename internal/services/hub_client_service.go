@@ -26,26 +26,26 @@ func NewHubClientService(repo repositories.HubClientRepository) HubClientService
 // GetAllHubClients returns all hub clients
 func (s *hubClientService) GetAllHubClients() ([]models.HubClient, error) {
 	clients, err := s.repo.GetAll()
-	return clients, utils.HandleDBError(err, "", nil)
+	return clients, utils.HandleDBError(err)
 }
 
 // GetHubClientByID retrieves a hub client by ID
 func (s *hubClientService) GetHubClientByID(id uint) (*models.HubClient, error) {
 	client, err := s.repo.GetByID(id)
-	return client, utils.HandleDBError(err, "id", id, "Hub client not found")
+	return client, utils.HandleDBError(err)
 }
 
 // CreateHubClient creates a new hub client
 func (s *hubClientService) CreateHubClient(hubClient *models.HubClient) error {
-	return utils.HandleDBError(s.repo.Create(hubClient), "external_id", hubClient.ExternalID)
+	return utils.HandleDBError(s.repo.Create(hubClient))
 }
 
 // UpdateHubClient updates an existing hub client
 func (s *hubClientService) UpdateHubClient(hubClient *models.HubClient) error {
-	return utils.HandleDBError(s.repo.Update(hubClient), "id", hubClient.ID, "Could not update hub client")
+	return utils.HandleDBError(s.repo.Update(hubClient))
 }
 
 // DeleteHubClient removes a hub client
 func (s *hubClientService) DeleteHubClient(id uint) error {
-	return utils.HandleDBError(s.repo.Delete(id), "id", id, "Could not delete hub client")
+	return utils.HandleDBError(s.repo.Delete(id))
 }
