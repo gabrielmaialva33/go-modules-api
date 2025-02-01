@@ -2,12 +2,13 @@ package config
 
 import (
 	"fmt"
-	"go.uber.org/zap"
 
 	"go-modules-api/utils"
 
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 // DB is the global database instance
@@ -30,7 +31,11 @@ func ConnectDatabase() {
 	log.Info("Connecting to the database", zap.String("host", Env.DbHost), zap.String("db_name", Env.DbName))
 
 	// Open database connection
-	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: false,
+		},
+	})
 	if err != nil {
 		log.Fatal("Failed to connect to database", zap.Error(err))
 	}
