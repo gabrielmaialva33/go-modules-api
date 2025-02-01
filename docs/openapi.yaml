@@ -179,7 +179,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    # errors
+    # exceptions
     Unauthorized:
       type: object
       properties:
