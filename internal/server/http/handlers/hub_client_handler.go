@@ -47,7 +47,6 @@ func (h *HubClientHandler) GetAllHubClients(c *fiber.Ctx) error {
 		})
 	}
 
-	// Chama serviço com parâmetros validados
 	clients, err := h.service.GetAllHubClients(params.Search, params.Active, params.SortField, params.SortOrder)
 	if err != nil {
 		var apiErr *exceptions.APIException
