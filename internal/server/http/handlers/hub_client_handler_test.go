@@ -143,8 +143,11 @@ func TestHubClientHandler_UpdateHubClient(t *testing.T) {
 	app := fiber.New()
 	app.Put("/hub_clients/:id", handler.UpdateHubClient)
 
-	mockClient := &models.HubClient{BaseID: models.BaseID{ID: 1}, Name: "Client1", ExternalID: "1"}
-	mockService.On("UpdateHubClient", mockClient).Return(nil)
+	mockID := uint(1)
+	mockClient := &models.HubClient{BaseID: models.BaseID{ID: mockID}, Name: "Client1", ExternalID: "1"}
+	mockService.On("GetHubClientByID", mockID).Return(mockClient, nil)
+	updatedClient := &models.HubClient{BaseID: models.BaseID{ID: mockID}, Name: "Client1", ExternalID: "1"}
+	mockService.On("UpdateHubClient", updatedClient).Return(nil)
 
 	payload := `{"name":"Client1","external_id": "1"}`
 	req := httptest.NewRequest("PUT", "/hub_clients/1", strings.NewReader(payload))
