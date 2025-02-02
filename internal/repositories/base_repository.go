@@ -5,6 +5,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// BaseRepositoryInterface defines common CRUD operations for any model type that has an ID.
+type BaseRepositoryInterface[T any] interface {
+	GetByID(id uint) (T, error)
+	Create(entity T) error
+	Update(entity T) error
+	Delete(id uint) error
+}
+
 // BaseRepository provides common CRUD operations for any model type that has an ID.
 type BaseRepository[T models.IDGetter] struct {
 	db *gorm.DB
@@ -31,9 +39,7 @@ func (r *BaseRepository[T]) Create(entity T) error {
 
 // Update updates an existing record.
 func (r *BaseRepository[T]) Update(entity T) error {
-	// Here, entity is of type T. Since T is expected to be a pointer type (e.g. *Role),
-	// the method GetID() is available.
-	return r.db.Where("id = ?", entity.GetID()).Save(entity).Error
+	return r.db.Where("id = ?", entity.GetID()).Updates(entity).Error
 }
 
 // Delete removes a record from the database by its ID.
@@ -41,3 +47,6 @@ func (r *BaseRepository[T]) Delete(id uint) error {
 	var entity T
 	return r.db.Delete(entity, id).Error
 }
+
+// Ensure BaseRepository implements BaseRepositoryInterface.
+var _ BaseRepositoryInterface[models.IDGetter] = &BaseRepository[models.IDGetter]{}
