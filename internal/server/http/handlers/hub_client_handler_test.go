@@ -123,7 +123,7 @@ func TestHubClientHandler_CreateHubClient(t *testing.T) {
 	mockClient := &models.HubClient{Name: "Client1", ExternalID: "1"}
 	mockService.On("CreateHubClient", mockClient).Return(nil)
 
-	payload := `{"name":"Client1","external_id":1}`
+	payload := `{"name":"Client1","external_id": "1"}`
 	req := httptest.NewRequest("POST", "/hub_clients", strings.NewReader(payload))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := app.Test(req, -1)
@@ -141,7 +141,7 @@ func TestHubClientHandler_UpdateHubClient(t *testing.T) {
 	mockClient := &models.HubClient{ID: 1, Name: "Client1", ExternalID: "1"}
 	mockService.On("UpdateHubClient", mockClient).Return(nil)
 
-	payload := `{"name":"Client1","external_id":1}`
+	payload := `{"name":"Client1","external_id": "1"}`
 	req := httptest.NewRequest("PUT", "/hub_clients/1", strings.NewReader(payload))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := app.Test(req, -1)
