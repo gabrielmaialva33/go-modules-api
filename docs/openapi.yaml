@@ -19,7 +19,7 @@ info:
 
     <!-- ReDoc-Inject: <security-definitions> -->
   x-logo:
-    url: ''
+    url: 'https://raw.githubusercontent.com/gabrielmaialva33/go-modules-api/refs/heads/main/.github/assets/cubes.png'
     altText: Logo
   contact:
     name: Gabriel M.
@@ -343,6 +343,10 @@ components:
           type: string
           description: The name of the hub client.
           example: "Client A"
+        external_id:
+          type: string
+          description: The external ID of the hub client.
+          example: 123
         created_at:
           type: string
           format: date-time
@@ -356,6 +360,7 @@ components:
       example: {
         'id': 1,
         'name': 'Client A',
+        'external_id': '123',
         'created_at': '2025-02-01T18:08:26.599656-03:00',
         'updated_at': '2025-02-01T18:08:26.599656-03:00',
       }
@@ -367,12 +372,12 @@ components:
           description: The name of the hub client.
           example: "Client A"
         external_id:
-          type: integer
+          type: string
           description: The external ID of the hub client.
           example: 123
       example: {
         'name': 'Client A',
-        'external_id': 123,
+        'external_id': '123',
       }
 
     PaginationMeta:
