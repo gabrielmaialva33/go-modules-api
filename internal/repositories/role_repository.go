@@ -30,7 +30,7 @@ func (r *roleRepository) Pagination(search string, active *bool, sortField strin
 	var roles []models.Role
 	var total int64
 
-	query := r.db.Model(&models.Role{})
+	query := r.db.Model(&models.Role{}).Scopes(scopeNotDeleted)
 
 	if search != "" {
 		// Search by name or slug using a case-insensitive LIKE query.
@@ -61,7 +61,7 @@ func (r *roleRepository) Pagination(search string, active *bool, sortField strin
 func (r *roleRepository) GetAll(search string, active *bool, sortField string, sortOrder string) ([]models.Role, error) {
 	var roles []models.Role
 
-	query := r.db.Model(&models.Role{})
+	query := r.db.Model(&models.Role{}).Scopes(scopeNotDeleted)
 
 	if search != "" {
 		query = query.Where("name ILIKE ? OR slug ILIKE ?", "%"+search+"%", "%"+search+"%")
@@ -84,11 +84,7 @@ func (r *roleRepository) GetAll(search string, active *bool, sortField string, s
 
 // GetByID returns a single role by its ID using BaseRepository.
 func (r *roleRepository) GetByID(id uint) (*models.Role, error) {
-	role, err := r.base.GetByID(id)
-	if err != nil {
-		return nil, err
-	}
-	return role, nil
+	return r.base.GetByID(id)
 }
 
 // Create inserts a new role into the database using BaseRepository.
@@ -104,4 +100,9 @@ func (r *roleRepository) Update(role *models.Role) error {
 // Delete removes a role from the database by its ID using BaseRepository.
 func (r *roleRepository) Delete(id uint) error {
 	return r.base.Delete(id)
+}
+
+// SoftDelete marks a role as deleted without actually removing it from the database using BaseRepository.
+func (r *roleRepository) SoftDelete(role *models.Role) error {
+	return r.base.SoftDelete(role)
 }
