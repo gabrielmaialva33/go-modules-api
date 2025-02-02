@@ -45,7 +45,7 @@ func (r *BaseRepository[T]) Update(entity T) error {
 // Delete removes a record from the database by its ID.
 func (r *BaseRepository[T]) Delete(id uint) error {
 	var entity T
-	return r.db.Delete(entity, id).Error
+	return r.db.Delete(&entity, id).Error
 }
 
 // Ensure BaseRepository implements BaseRepositoryInterface.
