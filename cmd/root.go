@@ -13,6 +13,7 @@ var rootCmd = &cobra.Command{
 	Long:  `This is a CLI application for managing the Go Modules API, including migrations and other administrative tasks.`,
 }
 
+// Execute runs the root command and any subcommands.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -20,4 +21,7 @@ func Execute() {
 	}
 }
 
-func init() {}
+func init() {
+	rootCmd.AddCommand(newMigrateCmd())
+	rootCmd.AddCommand(newSeedCmd())
+}
