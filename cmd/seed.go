@@ -47,6 +47,9 @@ func newSeedCmd() *cobra.Command {
 			for i := 0; i < numRecords; i++ {
 				hubClient := factories.HubClientFactory()
 				config.DB.Create(hubClient)
+
+				role := factories.RoleFactory()
+				config.DB.Create(role)
 			}
 
 			logger.Info("Database seeding completed successfully!")
