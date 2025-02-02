@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"go-modules-api/config"
 	"go-modules-api/internal/models"
+	"gorm.io/gorm"
 )
 
 // HubClientRepository defines the interface for database operations
@@ -15,11 +15,13 @@ type HubClientRepository interface {
 	Delete(id uint) error
 }
 
-type hubClientRepository struct{}
+type hubClientRepository struct {
+	db *gorm.DB
+}
 
 // NewHubClientRepository creates a new instance of HubClientRepository
-func NewHubClientRepository() HubClientRepository {
-	return &hubClientRepository{}
+func NewHubClientRepository(db *gorm.DB) HubClientRepository {
+	return &hubClientRepository{db: db}
 }
 
 // Pagination retrieves paginated hub clients from the database
@@ -27,7 +29,7 @@ func (r *hubClientRepository) Pagination(search string, active *bool, sortField 
 	var clients []models.HubClient
 	var total int64
 
-	db := config.DB.Model(&models.HubClient{})
+	db := r.db.Model(&models.HubClient{})
 
 	if search != "" {
 		db = db.Where("name ILIKE ?", "%"+search+"%")
@@ -55,7 +57,7 @@ func (r *hubClientRepository) Pagination(search string, active *bool, sortField 
 // GetAll retrieves all hub clients from the database with filtering and sorting
 func (r *hubClientRepository) GetAll(search string, active *bool, sortField string, sortOrder string) ([]models.HubClient, error) {
 	var clients []models.HubClient
-	db := config.DB
+	db := r.db.Model(&models.HubClient{})
 
 	if search != "" {
 		db = db.Where("name ILIKE ?", "%"+search+"%")
@@ -79,7 +81,7 @@ func (r *hubClientRepository) GetAll(search string, active *bool, sortField stri
 // GetByID retrieves a single hub client by ID
 func (r *hubClientRepository) GetByID(id uint) (*models.HubClient, error) {
 	var client models.HubClient
-	err := config.DB.First(&client, id).Error
+	err := r.db.First(&client, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -88,15 +90,15 @@ func (r *hubClientRepository) GetByID(id uint) (*models.HubClient, error) {
 
 // Create inserts a new hub client into the database
 func (r *hubClientRepository) Create(hubClient *models.HubClient) error {
-	return config.DB.Create(hubClient).Error
+	return r.db.Create(hubClient).Error
 }
 
 // Update modifies an existing hub client
 func (r *hubClientRepository) Update(hubClient *models.HubClient) error {
-	return config.DB.Where("id = ?", hubClient.ID).Updates(hubClient).Error
+	return r.db.Where("id = ?", hubClient.ID).Save(hubClient).Error
 }
 
 // Delete removes a hub client from the database
 func (r *hubClientRepository) Delete(id uint) error {
-	return config.DB.Delete(&models.HubClient{}, id).Error
+	return r.db.Delete(&models.HubClient{}, id).Error
 }

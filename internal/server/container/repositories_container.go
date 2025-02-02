@@ -1,6 +1,7 @@
 package container
 
 import (
+	"go-modules-api/config"
 	"go-modules-api/internal/repositories"
 )
 
@@ -9,7 +10,7 @@ type RepositoriesContainer struct {
 }
 
 func NewRepositoriesContainer() *RepositoriesContainer {
-	hubClientRepository := repositories.NewHubClientRepository()
+	hubClientRepository := repositories.NewHubClientRepository(config.DB)
 
 	return &RepositoriesContainer{
 		HubClientRepository: hubClientRepository,
