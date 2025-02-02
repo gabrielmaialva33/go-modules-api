@@ -30,7 +30,7 @@ func (r *hubClientRepository) Pagination(search string, active *bool, sortField 
 	var clients []models.HubClient
 	var total int64
 
-	query := r.db.Model(&models.HubClient{})
+	query := r.db.Model(&models.HubClient{}).Scopes(scopeNotDeleted)
 
 	if search != "" {
 		query = query.Where("name ILIKE ?", "%"+search+"%")
@@ -59,7 +59,7 @@ func (r *hubClientRepository) Pagination(search string, active *bool, sortField 
 func (r *hubClientRepository) GetAll(search string, active *bool, sortField string, sortOrder string) ([]models.HubClient, error) {
 	var clients []models.HubClient
 
-	query := r.db.Model(&models.HubClient{})
+	query := r.db.Model(&models.HubClient{}).Scopes(scopeNotDeleted)
 
 	if search != "" {
 		query = query.Where("name ILIKE ?", "%"+search+"%")
@@ -98,4 +98,9 @@ func (r *hubClientRepository) Update(hubClient *models.HubClient) error {
 // Delete removes a hub client from the database by its ID using BaseRepository.
 func (r *hubClientRepository) Delete(id uint) error {
 	return r.base.Delete(id)
+}
+
+// SoftDelete marks a hub client as deleted without actually removing it from the database using BaseRepository.
+func (r *hubClientRepository) SoftDelete(hubClient *models.HubClient) error {
+	return r.base.SoftDelete(hubClient)
 }
