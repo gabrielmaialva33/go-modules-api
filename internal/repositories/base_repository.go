@@ -1,10 +1,7 @@
 package repositories
 
 import (
-	"time"
-
 	"go-modules-api/internal/models"
-
 	"gorm.io/gorm"
 )
 
@@ -59,7 +56,10 @@ func (r *BaseRepository[T]) Delete(id uint) error {
 
 // SoftDelete marks a record as deleted without actually removing it from the database.
 func (r *BaseRepository[T]) SoftDelete(entity T) error {
-	return r.db.Model(entity).Updates(map[string]interface{}{"is_deleted": true, "deleted_at": time.Now()}).Error
+	return r.db.Model(entity).Updates(map[string]interface{}{
+		"is_deleted": true,
+		"deleted_at": gorm.Expr("NOW()"),
+	}).Error
 }
 
 // Ensure BaseRepository implements BaseRepositoryInterface.
