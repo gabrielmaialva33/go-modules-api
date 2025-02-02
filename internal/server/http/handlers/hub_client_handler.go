@@ -23,6 +23,46 @@ func NewHubClientHandler(service services.HubClientService) *HubClientHandler {
 	return &HubClientHandler{service: service}
 }
 
+// PaginateHubClients handles GET /hub_clients/paginate
+func (h *HubClientHandler) PaginateHubClients(c *fiber.Ctx) error {
+	params := dto.PaginatedHubClientDTO{
+		Search:    c.Query("search", ""),
+		SortField: c.Query("sort_field", "id"),
+		SortOrder: strings.ToLower(c.Query("sort_order", "asc")),
+		Page:      c.QueryInt("page", 1),
+		PageSize:  c.QueryInt("page_size", 10),
+	}
+
+	activeStr := c.Query("active")
+	if activeStr != "" {
+		activeBool, err := strconv.ParseBool(activeStr)
+		if err == nil {
+			params.Active = &activeBool
+		}
+	}
+
+	validationErrors := utils.ValidateStruct(params)
+	if len(validationErrors) > 0 {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+			"error":   "Validation failed",
+			"details": validationErrors,
+		})
+	}
+
+	clients, total, err := h.service.PaginateHubClients(params)
+	if err != nil {
+		var apiErr *exceptions.APIException
+		if errors.As(err, &apiErr) {
+			return apiErr.Response(c)
+		}
+		return exceptions.InternalServerError("An unexpected error occurred", nil).Response(c)
+	}
+
+	meta := utils.GeneratePaginationMeta(total, params.Page, params.PageSize)
+
+	return c.JSON(fiber.Map{"data": clients, "meta": meta})
+}
+
 // GetAllHubClients handles GET /hub_clients with filtering and sorting
 func (h *HubClientHandler) GetAllHubClients(c *fiber.Ctx) error {
 	params := dto.GetHubClientDTO{
