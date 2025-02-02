@@ -6,6 +6,6 @@ type CreateHubClientDTO struct {
 }
 
 type UpdateHubClientDTO struct {
-	Name       string `json:"name" validate:"min=3,max=100"`
-	ExternalID uint   `json:"external_id"`
+	Name       string `json:"name" validate:"omitempty,min=3,max=100"`
+	ExternalID uint   `json:"external_id" validate:"omitempty"`
 }
