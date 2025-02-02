@@ -162,10 +162,14 @@ func TestHubClientHandler_DeleteHubClient(t *testing.T) {
 	app.Delete("/hub_clients/:id", handler.SoftDeleteHubClient)
 
 	mockID := uint(1)
-	mockService.On("SoftDeleteHubClient", mockID).Return(nil)
+	mockClient := &models.HubClient{BaseID: models.BaseID{ID: mockID}, Name: "Client1"}
+	mockService.On("GetHubClientByID", mockID).Return(mockClient, nil)
+	mockService.On("SoftDeleteHubClient", mockClient).Return(nil)
 
 	req := httptest.NewRequest("DELETE", "/hub_clients/1", nil)
 	resp, err := app.Test(req, -1)
 	require.NoError(t, err)
 	assert.Equal(t, fiber.StatusNoContent, resp.StatusCode)
+
+	mockService.AssertExpectations(t)
 }
