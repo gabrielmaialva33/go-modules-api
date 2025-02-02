@@ -108,7 +108,6 @@ func TestPaginateHubClients_Error(t *testing.T) {
 
 	_, _, err := service.PaginateHubClients(params)
 	assert.Error(t, err)
-	// Compara a mensagem completa retornada por HandleDBError.
 	assert.Equal(t, "[500] internal_server_error: A database error occurred", err.Error())
 
 	mockRepo.AssertExpectations(t)
