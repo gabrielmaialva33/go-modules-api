@@ -63,7 +63,7 @@ func TestHubClientHandler_PaginateHubClients(t *testing.T) {
 		Page:      1,
 		PageSize:  10,
 	}
-	mockClients := []models.HubClient{{ID: 1, Name: "Client1"}, {ID: 2, Name: "Client2"}}
+	mockClients := []models.HubClient{{BaseID: models.BaseID{ID: 1}, Name: "Client1"}, {BaseID: models.BaseID{ID: 2}, Name: "Client2"}}
 	mockTotal := int64(2)
 
 	mockService.On("PaginateHubClients", params).Return(mockClients, mockTotal, nil)
@@ -85,7 +85,7 @@ func TestHubClientHandler_ListHubClients(t *testing.T) {
 	active := true
 	sortField := "id"
 	sortOrder := "asc"
-	mockClients := []models.HubClient{{ID: 1, Name: "Client1"}}
+	mockClients := []models.HubClient{{BaseID: models.BaseID{ID: 1}, Name: "Client1"}}
 
 	mockService.On("ListHubClients", search, &active, sortField, sortOrder).Return(mockClients, nil)
 
@@ -103,7 +103,7 @@ func TestHubClientHandler_GetHubClientByID(t *testing.T) {
 	app.Get("/hub_clients/:id", handler.GetHubClientByID)
 
 	mockID := uint(1)
-	mockClient := &models.HubClient{ID: mockID, Name: "Client1"}
+	mockClient := &models.HubClient{BaseID: models.BaseID{ID: mockID}, Name: "Client1"}
 
 	mockService.On("GetHubClientByID", mockID).Return(mockClient, nil)
 
@@ -138,7 +138,7 @@ func TestHubClientHandler_UpdateHubClient(t *testing.T) {
 	app := fiber.New()
 	app.Put("/hub_clients/:id", handler.UpdateHubClient)
 
-	mockClient := &models.HubClient{ID: 1, Name: "Client1", ExternalID: "1"}
+	mockClient := &models.HubClient{BaseID: models.BaseID{ID: 1}, Name: "Client1", ExternalID: "1"}
 	mockService.On("UpdateHubClient", mockClient).Return(nil)
 
 	payload := `{"name":"Client1","external_id": "1"}`

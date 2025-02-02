@@ -1,15 +1,21 @@
-package services
+package services_test
 
 import (
-	"go-modules-api/internal/dto"
-	"go-modules-api/internal/models"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"go-modules-api/internal/dto"
+	"go-modules-api/internal/models"
+	"go-modules-api/internal/services"
 )
 
-// MockHubClientRepository is a mock implementation of the HubClientRepository interface
+// ---------------------------
+// MockHubClientRepository
+// ---------------------------
+
 type MockHubClientRepository struct {
 	mock.Mock
 }
@@ -26,7 +32,10 @@ func (m *MockHubClientRepository) GetAll(search string, active *bool, sortField 
 
 func (m *MockHubClientRepository) GetByID(id uint) (*models.HubClient, error) {
 	args := m.Called(id)
-	return args.Get(0).(*models.HubClient), args.Error(1)
+	if args.Get(0) != nil {
+		return args.Get(0).(*models.HubClient), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *MockHubClientRepository) Create(hubClient *models.HubClient) error {
@@ -44,110 +53,239 @@ func (m *MockHubClientRepository) Delete(id uint) error {
 	return args.Error(0)
 }
 
-func TestHubClientService_PaginateHubClients(t *testing.T) {
-	mockRepo := new(MockHubClientRepository)
-	service := NewHubClientService(mockRepo)
+// ---------------------------
+// Service Test
+// ---------------------------
 
-	mockResults := []models.HubClient{{ID: 1, Name: "Client1"}, {ID: 2, Name: "Client2"}}
-	mockTotal := int64(2)
-	mockParams := dto.PaginatedHubClientDTO{
+func TestPaginateHubClients_Success(t *testing.T) {
+	mockRepo := new(MockHubClientRepository)
+	service := services.NewHubClientService(mockRepo)
+
+	params := dto.PaginatedHubClientDTO{
+		Search:    "test",
+		Active:    nil,
+		SortField: "name",
+		SortOrder: "asc",
 		Page:      1,
 		PageSize:  10,
-		Search:    "Client",
-		Active:    nil,
-		SortField: "id",
-		SortOrder: "asc",
 	}
 
-	mockRepo.On("Pagination", mockParams.Search, mockParams.Active, mockParams.SortField, mockParams.SortOrder, mockParams.Page, mockParams.PageSize).Return(mockResults, mockTotal, nil)
+	expectedClients := []models.HubClient{
+		{Name: "Client 1"},
+		{Name: "Client 2"},
+	}
+	expectedTotal := int64(2)
 
-	result, total, err := service.PaginateHubClients(mockParams)
+	mockRepo.
+		On("Pagination", params.Search, params.Active, params.SortField, params.SortOrder, params.Page, params.PageSize).
+		Return(expectedClients, expectedTotal, nil)
 
+	clients, total, err := service.PaginateHubClients(params)
 	assert.NoError(t, err)
-	assert.Equal(t, mockTotal, total)
-	assert.Equal(t, mockResults, result)
+	assert.Equal(t, expectedClients, clients)
+	assert.Equal(t, expectedTotal, total)
 
 	mockRepo.AssertExpectations(t)
 }
 
-func TestHubClientService_ListHubClients(t *testing.T) {
+func TestPaginateHubClients_Error(t *testing.T) {
 	mockRepo := new(MockHubClientRepository)
-	service := NewHubClientService(mockRepo)
+	service := services.NewHubClientService(mockRepo)
 
-	search := "Client"
-	active := true
+	params := dto.PaginatedHubClientDTO{
+		Search:    "",
+		Active:    nil,
+		SortField: "name",
+		SortOrder: "asc",
+		Page:      1,
+		PageSize:  10,
+	}
+
+	expectedError := errors.New("db error")
+	mockRepo.
+		On("Pagination", params.Search, params.Active, params.SortField, params.SortOrder, params.Page, params.PageSize).
+		Return([]models.HubClient{}, int64(0), expectedError)
+
+	_, _, err := service.PaginateHubClients(params)
+	assert.Error(t, err)
+	// Compara a mensagem completa retornada por HandleDBError.
+	assert.Equal(t, "[500] internal_server_error: A database error occurred", err.Error())
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestListHubClients_Success(t *testing.T) {
+	mockRepo := new(MockHubClientRepository)
+	service := services.NewHubClientService(mockRepo)
+
+	search := "test"
+	active := new(bool)
+	*active = true
 	sortField := "name"
 	sortOrder := "asc"
-	mockResults := []models.HubClient{{ID: 1, Name: "Client1"}}
 
-	mockRepo.On("GetAll", search, &active, sortField, sortOrder).Return(mockResults, nil)
+	expectedClients := []models.HubClient{
+		{Name: "Client 1"},
+	}
+	mockRepo.
+		On("GetAll", search, active, sortField, sortOrder).
+		Return(expectedClients, nil)
 
-	result, err := service.ListHubClients(search, &active, sortField, sortOrder)
-
+	clients, err := service.ListHubClients(search, active, sortField, sortOrder)
 	assert.NoError(t, err)
-	assert.Equal(t, mockResults, result)
+	assert.Equal(t, expectedClients, clients)
 
 	mockRepo.AssertExpectations(t)
 }
 
-func TestHubClientService_GetHubClientByID(t *testing.T) {
+func TestListHubClients_Error(t *testing.T) {
 	mockRepo := new(MockHubClientRepository)
-	service := NewHubClientService(mockRepo)
+	service := services.NewHubClientService(mockRepo)
 
-	mockID := uint(1)
-	mockResult := &models.HubClient{ID: mockID, Name: "Client1"}
+	search := ""
+	var active *bool = nil
+	sortField := "name"
+	sortOrder := "asc"
 
-	mockRepo.On("GetByID", mockID).Return(mockResult, nil)
+	expectedError := errors.New("db error")
+	mockRepo.
+		On("GetAll", search, active, sortField, sortOrder).
+		Return([]models.HubClient{}, expectedError)
 
-	result, err := service.GetHubClientByID(mockID)
-
-	assert.NoError(t, err)
-	assert.Equal(t, mockResult, result)
+	_, err := service.ListHubClients(search, active, sortField, sortOrder)
+	assert.Error(t, err)
+	assert.Equal(t, "[500] internal_server_error: A database error occurred", err.Error())
 
 	mockRepo.AssertExpectations(t)
 }
 
-func TestHubClientService_CreateHubClient(t *testing.T) {
+func TestGetHubClientByID_Success(t *testing.T) {
 	mockRepo := new(MockHubClientRepository)
-	service := NewHubClientService(mockRepo)
+	service := services.NewHubClientService(mockRepo)
 
-	mockClient := &models.HubClient{ID: 1, Name: "Client1"}
+	clientID := uint(1)
+	expectedClient := &models.HubClient{Name: "Client 1"}
+	mockRepo.
+		On("GetByID", clientID).
+		Return(expectedClient, nil)
 
-	mockRepo.On("Create", mockClient).Return(nil)
+	client, err := service.GetHubClientByID(clientID)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedClient, client)
 
-	err := service.CreateHubClient(mockClient)
+	mockRepo.AssertExpectations(t)
+}
 
+func TestGetHubClientByID_Error(t *testing.T) {
+	mockRepo := new(MockHubClientRepository)
+	service := services.NewHubClientService(mockRepo)
+
+	clientID := uint(1)
+	expectedError := errors.New("not found")
+	mockRepo.
+		On("GetByID", clientID).
+		Return(nil, expectedError)
+
+	client, err := service.GetHubClientByID(clientID)
+	assert.Error(t, err)
+	assert.Nil(t, client)
+	assert.Equal(t, "[500] internal_server_error: A database error occurred", err.Error())
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestCreateHubClient_Success(t *testing.T) {
+	mockRepo := new(MockHubClientRepository)
+	service := services.NewHubClientService(mockRepo)
+
+	newClient := &models.HubClient{Name: "New Client"}
+	mockRepo.
+		On("Create", newClient).
+		Return(nil)
+
+	err := service.CreateHubClient(newClient)
 	assert.NoError(t, err)
 
 	mockRepo.AssertExpectations(t)
 }
 
-func TestHubClientService_UpdateHubClient(t *testing.T) {
+func TestCreateHubClient_Error(t *testing.T) {
 	mockRepo := new(MockHubClientRepository)
-	service := NewHubClientService(mockRepo)
+	service := services.NewHubClientService(mockRepo)
 
-	mockClient := &models.HubClient{ID: 1, Name: "UpdatedClient"}
+	newClient := &models.HubClient{Name: "New Client"}
+	expectedError := errors.New("create error")
+	mockRepo.
+		On("Create", newClient).
+		Return(expectedError)
 
-	mockRepo.On("Update", mockClient).Return(nil)
+	err := service.CreateHubClient(newClient)
+	assert.Error(t, err)
+	assert.Equal(t, "[500] internal_server_error: A database error occurred", err.Error())
 
-	err := service.UpdateHubClient(mockClient)
+	mockRepo.AssertExpectations(t)
+}
 
+func TestUpdateHubClient_Success(t *testing.T) {
+	mockRepo := new(MockHubClientRepository)
+	service := services.NewHubClientService(mockRepo)
+
+	clientToUpdate := &models.HubClient{Name: "Updated Client"}
+	mockRepo.
+		On("Update", clientToUpdate).
+		Return(nil)
+
+	err := service.UpdateHubClient(clientToUpdate)
 	assert.NoError(t, err)
 
 	mockRepo.AssertExpectations(t)
 }
 
-func TestHubClientService_DeleteHubClient(t *testing.T) {
+func TestUpdateHubClient_Error(t *testing.T) {
 	mockRepo := new(MockHubClientRepository)
-	service := NewHubClientService(mockRepo)
+	service := services.NewHubClientService(mockRepo)
 
-	mockID := uint(1)
+	clientToUpdate := &models.HubClient{Name: "Updated Client"}
+	expectedError := errors.New("update error")
+	mockRepo.
+		On("Update", clientToUpdate).
+		Return(expectedError)
 
-	mockRepo.On("Delete", mockID).Return(nil)
+	err := service.UpdateHubClient(clientToUpdate)
+	assert.Error(t, err)
+	assert.Equal(t, "[500] internal_server_error: A database error occurred", err.Error())
 
-	err := service.DeleteHubClient(mockID)
+	mockRepo.AssertExpectations(t)
+}
 
+func TestDeleteHubClient_Success(t *testing.T) {
+	mockRepo := new(MockHubClientRepository)
+	service := services.NewHubClientService(mockRepo)
+
+	clientID := uint(1)
+	mockRepo.
+		On("Delete", clientID).
+		Return(nil)
+
+	err := service.DeleteHubClient(clientID)
 	assert.NoError(t, err)
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestDeleteHubClient_Error(t *testing.T) {
+	mockRepo := new(MockHubClientRepository)
+	service := services.NewHubClientService(mockRepo)
+
+	clientID := uint(1)
+	expectedError := errors.New("delete error")
+	mockRepo.
+		On("Delete", clientID).
+		Return(expectedError)
+
+	err := service.DeleteHubClient(clientID)
+	assert.Error(t, err)
+	assert.Equal(t, "[500] internal_server_error: A database error occurred", err.Error())
 
 	mockRepo.AssertExpectations(t)
 }
