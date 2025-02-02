@@ -49,6 +49,11 @@ func (m *MockHubClientService) DeleteHubClient(id uint) error {
 	return args.Error(0)
 }
 
+func (m *MockHubClientService) SoftDeleteHubClient(hubClient *models.HubClient) error {
+	args := m.Called(hubClient)
+	return args.Error(0)
+}
+
 func TestHubClientHandler_PaginateHubClients(t *testing.T) {
 	mockService := new(MockHubClientService)
 	handler := NewHubClientHandler(mockService)
@@ -154,10 +159,10 @@ func TestHubClientHandler_DeleteHubClient(t *testing.T) {
 	handler := NewHubClientHandler(mockService)
 
 	app := fiber.New()
-	app.Delete("/hub_clients/:id", handler.DeleteHubClient)
+	app.Delete("/hub_clients/:id", handler.SoftDeleteHubClient)
 
 	mockID := uint(1)
-	mockService.On("DeleteHubClient", mockID).Return(nil)
+	mockService.On("SoftDeleteHubClient", mockID).Return(nil)
 
 	req := httptest.NewRequest("DELETE", "/hub_clients/1", nil)
 	resp, err := app.Test(req, -1)
