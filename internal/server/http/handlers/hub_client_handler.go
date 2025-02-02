@@ -176,6 +176,15 @@ func (h *HubClientHandler) UpdateHubClient(c *fiber.Ctx) error {
 		})
 	}
 
+	_, err = h.service.GetHubClientByID(uint(id))
+	if err != nil {
+		var apiErr *exceptions.APIException
+		if errors.As(err, &apiErr) {
+			return apiErr.Response(c)
+		}
+		return exceptions.InternalServerError("An unexpected error occurred", nil).Response(c)
+	}
+
 	// Update entity with new values
 	client := &models.HubClient{
 		BaseID:     models.BaseID{ID: uint(id)},
