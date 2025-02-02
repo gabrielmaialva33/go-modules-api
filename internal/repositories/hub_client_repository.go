@@ -7,6 +7,7 @@ import (
 
 // HubClientRepository defines the interface for database operations
 type HubClientRepository interface {
+	Pagination(search string, active *bool, sortField string, sortOrder string, page int, pageSize int) ([]models.HubClient, int64, error)
 	GetAll(search string, active *bool, sortField string, sortOrder string) ([]models.HubClient, error)
 	GetByID(id uint) (*models.HubClient, error)
 	Create(hubClient *models.HubClient) error
@@ -19,6 +20,36 @@ type hubClientRepository struct{}
 // NewHubClientRepository creates a new instance of HubClientRepository
 func NewHubClientRepository() HubClientRepository {
 	return &hubClientRepository{}
+}
+
+// Pagination retrieves paginated hub clients from the database
+func (r *hubClientRepository) Pagination(search string, active *bool, sortField string, sortOrder string, page int, pageSize int) ([]models.HubClient, int64, error) {
+	var clients []models.HubClient
+	var total int64
+
+	db := config.DB.Model(&models.HubClient{})
+
+	if search != "" {
+		db = db.Where("name ILIKE ?", "%"+search+"%")
+	}
+
+	if active != nil {
+		db = db.Where("active = ?", *active)
+	}
+
+	db.Count(&total)
+
+	if sortField != "" {
+		if sortOrder != "desc" {
+			sortOrder = "asc"
+		}
+		db = db.Order(sortField + " " + sortOrder)
+	}
+
+	offset := (page - 1) * pageSize
+	err := db.Offset(offset).Limit(pageSize).Find(&clients).Error
+
+	return clients, total, err
 }
 
 // GetAll retrieves all hub clients from the database with filtering and sorting
