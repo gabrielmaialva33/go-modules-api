@@ -54,6 +54,14 @@ It provides a modular structure to manage **hub clients**, **modules**, **roles*
 
 <br>
 
+## :chart_with_upwards_trend: Database Diagram
+
+<p align="center">
+  <img src=".github/assets/modules_graphml.svg" alt="Database Diagram" width="800">
+</p>
+
+<br>
+
 ## :wrench: Tools
 
 - **[VSCode](https://code.visualstudio.com/)**
