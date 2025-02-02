@@ -53,6 +53,11 @@ func (m *MockHubClientRepository) Delete(id uint) error {
 	return args.Error(0)
 }
 
+func (m *MockHubClientRepository) SoftDelete(hubClient *models.HubClient) error {
+	args := m.Called(hubClient)
+	return args.Error(0)
+}
+
 // ---------------------------
 // Service Test
 // ---------------------------
