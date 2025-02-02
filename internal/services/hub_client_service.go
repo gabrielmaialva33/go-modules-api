@@ -15,6 +15,7 @@ type HubClientService interface {
 	CreateHubClient(hubClient *models.HubClient) error
 	UpdateHubClient(hubClient *models.HubClient) error
 	DeleteHubClient(id uint) error
+	SoftDeleteHubClient(hubClient *models.HubClient) error
 }
 
 type hubClientService struct {
@@ -63,4 +64,9 @@ func (s *hubClientService) UpdateHubClient(hubClient *models.HubClient) error {
 // DeleteHubClient removes a hub client
 func (s *hubClientService) DeleteHubClient(id uint) error {
 	return utils.HandleDBError(s.repo.Delete(id))
+}
+
+// SoftDeleteHubClient marks a hub client as deleted
+func (s *hubClientService) SoftDeleteHubClient(hubClient *models.HubClient) error {
+	return utils.HandleDBError(s.repo.SoftDelete(hubClient))
 }

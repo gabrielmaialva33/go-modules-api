@@ -14,6 +14,7 @@ type RoleService interface {
 	CreateRole(role *models.Role) error
 	UpdateRole(role *models.Role) error
 	DeleteRole(id uint) error
+	SoftDeleteRole(role *models.Role) error
 }
 
 type roleService struct {
@@ -56,4 +57,8 @@ func (s *roleService) UpdateRole(role *models.Role) error {
 
 func (s *roleService) DeleteRole(id uint) error {
 	return utils.HandleDBError(s.repo.Delete(id))
+}
+
+func (s *roleService) SoftDeleteRole(role *models.Role) error {
+	return utils.HandleDBError(s.repo.SoftDelete(role))
 }
