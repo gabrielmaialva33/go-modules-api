@@ -202,14 +202,23 @@ func (h *RoleHandler) UpdateRole(c *fiber.Ctx) error {
 	return c.JSON(role)
 }
 
-// DeleteRole handles DELETE /roles/:id
-func (h *RoleHandler) DeleteRole(c *fiber.Ctx) error {
+// SoftDeleteRole handles DELETE /roles/:id
+func (h *RoleHandler) SoftDeleteRole(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		return exceptions.BadRequest("Invalid ID format", fiber.Map{"field": "id", "value": c.Params("id")}).Response(c)
 	}
 
-	if err := h.service.DeleteRole(uint(id)); err != nil {
+	role, err := h.service.GetRoleByID(uint(id))
+	if err != nil {
+		var apiErr *exceptions.APIException
+		if errors.As(err, &apiErr) {
+			return apiErr.Response(c)
+		}
+		return exceptions.InternalServerError("An unexpected error occurred", nil).Response(c)
+	}
+
+	if err := h.service.SoftDeleteRole(role); err != nil {
 		var apiErr *exceptions.APIException
 		if errors.As(err, &apiErr) {
 			return apiErr.Response(c)
