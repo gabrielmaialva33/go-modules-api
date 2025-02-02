@@ -8,11 +8,11 @@ type BaseID struct {
 
 type BaseAttributes struct {
 	Active    bool `gorm:"default:true" json:"active"`
-	IsDeleted bool `gorm:"default:false" json:"is_deleted"`
+	IsDeleted bool `gorm:"default:false" json:"-"`
 }
 
 type BaseTimestamps struct {
-	DeletedAt *time.Time `gorm:"index" json:"deleted_at"`
+	DeletedAt *time.Time `gorm:"index" json:"-"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 }
