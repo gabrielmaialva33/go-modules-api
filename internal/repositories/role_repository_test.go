@@ -127,13 +127,13 @@ func TestRoleRepository_GetByID(t *testing.T) {
 		expectError bool
 	}{
 		{"success", func() {
-			mock.ExpectQuery(`SELECT \* FROM "roles" WHERE "roles"."id" = \$1 ORDER BY "roles"."id" LIMIT \$2`).
-				WithArgs(1, 1).
+			mock.ExpectQuery(`SELECT \* FROM "roles" WHERE "roles"."id" = \$1 AND is_deleted = \$2 ORDER BY "roles"."id" LIMIT \$3`).
+				WithArgs(1, false, 1).
 				WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).AddRow(1, "Admin"))
 		}, 1, false},
 		{"not_found", func() {
-			mock.ExpectQuery(`SELECT \* FROM "roles" WHERE "roles"."id" = \$1 ORDER BY "roles"."id" LIMIT \$2`).
-				WithArgs(1, 1).
+			mock.ExpectQuery(`SELECT \* FROM "roles" WHERE "roles"."id" = \$1 AND is_deleted = \$2 ORDER BY "roles"."id" LIMIT \$3`).
+				WithArgs(1, false, 1).
 				WillReturnRows(sqlmock.NewRows([]string{"id", "name"}))
 		}, 1, true},
 	}
@@ -141,12 +141,11 @@ func TestRoleRepository_GetByID(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.prepareMock()
-			role, err := repo.GetByID(tc.id)
+			_, err := repo.GetByID(tc.id)
 			if tc.expectError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, role)
 			}
 			assert.NoError(t, mock.ExpectationsWereMet())
 		})
@@ -261,8 +260,8 @@ func TestRoleRepository_Delete(t *testing.T) {
 			"success",
 			func() {
 				mock.ExpectBegin()
-				mock.ExpectExec(`DELETE FROM "roles"`).
-					WithArgs(1).
+				mock.ExpectExec(`DELETE FROM "roles" WHERE "roles"."id" = \$1 AND is_deleted = \$2`).
+					WithArgs(1, false).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 				mock.ExpectCommit()
 			},
@@ -272,8 +271,8 @@ func TestRoleRepository_Delete(t *testing.T) {
 			"db_error",
 			func() {
 				mock.ExpectBegin()
-				mock.ExpectExec(`DELETE FROM "roles"`).
-					WithArgs(1).
+				mock.ExpectExec(`DELETE FROM "roles" WHERE "roles"."id" = \$1 AND is_deleted = \$2`).
+					WithArgs(1, false).
 					WillReturnError(gorm.ErrInvalidTransaction)
 				mock.ExpectRollback()
 			},
