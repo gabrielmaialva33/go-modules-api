@@ -195,14 +195,23 @@ func (h *HubClientHandler) UpdateHubClient(c *fiber.Ctx) error {
 	return c.JSON(client)
 }
 
-// DeleteHubClient handles DELETE /hub_clients/:id
-func (h *HubClientHandler) DeleteHubClient(c *fiber.Ctx) error {
+// SoftDeleteHubClient handles DELETE /hub_clients/:id
+func (h *HubClientHandler) SoftDeleteHubClient(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		return exceptions.BadRequest("Invalid ID format", fiber.Map{"field": "id", "value": c.Params("id")}).Response(c)
 	}
 
-	if err := h.service.DeleteHubClient(uint(id)); err != nil {
+	client, err := h.service.GetHubClientByID(uint(id))
+	if err != nil {
+		var apiErr *exceptions.APIException
+		if errors.As(err, &apiErr) {
+			return apiErr.Response(c)
+		}
+		return exceptions.InternalServerError("An unexpected error occurred", nil).Response(c)
+	}
+
+	if err := h.service.SoftDeleteHubClient(client); err != nil {
 		var apiErr *exceptions.APIException
 		if errors.As(err, &apiErr) {
 			return apiErr.Response(c)
