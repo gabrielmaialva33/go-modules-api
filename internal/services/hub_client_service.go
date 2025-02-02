@@ -10,7 +10,7 @@ import (
 // HubClientService defines business logic for hub clients
 type HubClientService interface {
 	PaginateHubClients(params dto.PaginatedHubClientDTO) ([]models.HubClient, int64, error)
-	GetAllHubClients(search string, active *bool, sortField string, sortOrder string) ([]models.HubClient, error)
+	ListHubClients(search string, active *bool, sortField string, sortOrder string) ([]models.HubClient, error)
 	GetHubClientByID(id uint) (*models.HubClient, error)
 	CreateHubClient(hubClient *models.HubClient) error
 	UpdateHubClient(hubClient *models.HubClient) error
@@ -38,8 +38,8 @@ func (s *hubClientService) PaginateHubClients(params dto.PaginatedHubClientDTO) 
 	return clients, total, utils.HandleDBError(err)
 }
 
-// GetAllHubClients returns all hub clients with filtering and sorting
-func (s *hubClientService) GetAllHubClients(search string, active *bool, sortField string, sortOrder string) ([]models.HubClient, error) {
+// ListHubClients returns all hub clients with filtering and sorting
+func (s *hubClientService) ListHubClients(search string, active *bool, sortField string, sortOrder string) ([]models.HubClient, error) {
 	clients, err := s.repo.GetAll(search, active, sortField, sortOrder)
 	return clients, utils.HandleDBError(err)
 }

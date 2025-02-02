@@ -63,8 +63,8 @@ func (h *HubClientHandler) PaginateHubClients(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"data": clients, "meta": meta})
 }
 
-// GetAllHubClients handles GET /hub_clients with filtering and sorting
-func (h *HubClientHandler) GetAllHubClients(c *fiber.Ctx) error {
+// ListHubClients handles GET /hub_clients with filtering and sorting
+func (h *HubClientHandler) ListHubClients(c *fiber.Ctx) error {
 	params := dto.ListHubClientDTO{
 		Search:    c.Query("search", ""),
 		SortField: c.Query("sort_field", "id"),
@@ -87,7 +87,7 @@ func (h *HubClientHandler) GetAllHubClients(c *fiber.Ctx) error {
 		})
 	}
 
-	clients, err := h.service.GetAllHubClients(params.Search, params.Active, params.SortField, params.SortOrder)
+	clients, err := h.service.ListHubClients(params.Search, params.Active, params.SortField, params.SortOrder)
 	if err != nil {
 		var apiErr *exceptions.APIException
 		if errors.As(err, &apiErr) {

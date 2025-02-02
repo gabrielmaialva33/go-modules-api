@@ -14,7 +14,7 @@ func HubClientsRoutes(app *fiber.App, hubClientHandler *handlers.HubClientHandle
 	hubClients := api.Group("/hub_clients")
 
 	hubClients.Get("/paginate", hubClientHandler.PaginateHubClients)
-	hubClients.Get("/", hubClientHandler.GetAllHubClients)
+	hubClients.Get("/", hubClientHandler.ListHubClients)
 	hubClients.Post("/", hubClientHandler.CreateHubClient)
 	hubClients.Put("/:id", hubClientHandler.UpdateHubClient)
 	hubClients.Delete("/:id", hubClientHandler.DeleteHubClient)
