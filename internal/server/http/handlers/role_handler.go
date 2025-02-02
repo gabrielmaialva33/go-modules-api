@@ -183,6 +183,15 @@ func (h *RoleHandler) UpdateRole(c *fiber.Ctx) error {
 		})
 	}
 
+	_, err = h.service.GetRoleByID(uint(id))
+	if err != nil {
+		var apiErr *exceptions.APIException
+		if errors.As(err, &apiErr) {
+			return apiErr.Response(c)
+		}
+		return exceptions.InternalServerError("An unexpected error occurred", nil).Response(c)
+	}
+
 	// Update entity with new values
 	role := &models.Role{
 		BaseID: models.BaseID{ID: uint(id)},
