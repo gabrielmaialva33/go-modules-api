@@ -37,7 +37,7 @@ tags:
   - name: HubClients
     description: Operations related to hub clients
 paths:
-
+  # hub_clients
   /api/hub_clients/paginate:
     get:
       tags:
@@ -105,7 +105,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Unauthorized'
-
   /api/hub_clients:
     get:
       tags:
@@ -121,6 +120,30 @@ paths:
           schema:
             type: string
             default: application/json
+        - name: search
+          in: query
+          description: Filter by client name (partial match).
+          schema:
+            type: string
+        - name: active
+          in: query
+          description: Filter by active status (`true` or `false`).
+          schema:
+            type: boolean
+        - name: sort_field
+          in: query
+          description: Field to sort by.
+          schema:
+            type: string
+            enum: [ id, name, active, external_id, created_at, updated_at ]
+            default: id
+        - name: sort_order
+          in: query
+          description: Sorting direction (`asc` or `desc`).
+          schema:
+            type: string
+            enum: [ asc, desc ]
+            default: asc
       responses:
         '200':
           description: A list of hub clients
