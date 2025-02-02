@@ -1,6 +1,7 @@
 package services
 
 import (
+	"go-modules-api/internal/dto"
 	"go-modules-api/internal/models"
 	"go-modules-api/internal/repositories"
 	"go-modules-api/utils"
@@ -8,6 +9,7 @@ import (
 
 // HubClientService defines business logic for hub clients
 type HubClientService interface {
+	PaginateHubClients(params dto.PaginatedHubClientDTO) ([]models.HubClient, int64, error)
 	GetAllHubClients(search string, active *bool, sortField string, sortOrder string) ([]models.HubClient, error)
 	GetHubClientByID(id uint) (*models.HubClient, error)
 	CreateHubClient(hubClient *models.HubClient) error
@@ -21,6 +23,19 @@ type hubClientService struct {
 
 func NewHubClientService(repo repositories.HubClientRepository) HubClientService {
 	return &hubClientService{repo: repo}
+}
+
+// PaginateHubClients retrieves paginated hub clients
+func (s *hubClientService) PaginateHubClients(params dto.PaginatedHubClientDTO) ([]models.HubClient, int64, error) {
+	clients, total, err := s.repo.Pagination(
+		params.Search,
+		params.Active,
+		params.SortField,
+		params.SortOrder,
+		params.Page,
+		params.PageSize,
+	)
+	return clients, total, utils.HandleDBError(err)
 }
 
 // GetAllHubClients returns all hub clients with filtering and sorting
