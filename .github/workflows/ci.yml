@@ -9,7 +9,25 @@ on:
       - main
 
 jobs:
-  build:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.23
+
+      - name: Install golangci-lint
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+      - name: Run golangci-lint
+        run: golangci-lint run
+
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -37,5 +55,33 @@ jobs:
       - name: Run tests
         run: go test ./... -v
 
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.23
+
+      - name: Cache Go modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install dependencies
+        run: go mod tidy
+
       - name: Build the application
-        run: go build -o bin/go-modules-api
+        run: |
+          mkdir -p bin
+          go build -o bin/go-modules-api
