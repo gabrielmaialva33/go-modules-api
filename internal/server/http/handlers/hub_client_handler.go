@@ -65,7 +65,7 @@ func (h *HubClientHandler) PaginateHubClients(c *fiber.Ctx) error {
 
 // GetAllHubClients handles GET /hub_clients with filtering and sorting
 func (h *HubClientHandler) GetAllHubClients(c *fiber.Ctx) error {
-	params := dto.GetHubClientDTO{
+	params := dto.ListHubClientDTO{
 		Search:    c.Query("search", ""),
 		SortField: c.Query("sort_field", "id"),
 		SortOrder: strings.ToLower(c.Query("sort_order", "asc")),

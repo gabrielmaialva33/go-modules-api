@@ -10,7 +10,7 @@ type UpdateHubClientDTO struct {
 	ExternalID uint   `json:"external_id" validate:"omitempty"`
 }
 
-type GetHubClientDTO struct {
+type ListHubClientDTO struct {
 	Search    string `json:"search" validate:"omitempty"`
 	Active    *bool  `json:"active" validate:"omitempty"`
 	SortField string `json:"sort_field" validate:"omitempty,oneof=id name active external_id created_at updated_at"`
