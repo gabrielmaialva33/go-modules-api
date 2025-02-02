@@ -97,7 +97,7 @@ func (h *HubClientHandler) UpdateHubClient(c *fiber.Ctx) error {
 		return exceptions.BadRequest("Invalid ID format", fiber.Map{"field": "id", "value": c.Params("id")}).Response(c)
 	}
 
-	var payload dto.CreateHubClientDTO
+	var payload dto.UpdateHubClientDTO
 	if err := c.BodyParser(&payload); err != nil {
 		return exceptions.BadRequest("Invalid request body", nil).Response(c)
 	}
