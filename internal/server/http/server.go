@@ -29,6 +29,7 @@ func NewServer(log *zap.Logger) *Server {
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 	app.Use(middleware.RequestLogger(log))
+	app.Use(middleware.ValidationMiddleware)
 
 	app.Static("/", "./docs")
 
