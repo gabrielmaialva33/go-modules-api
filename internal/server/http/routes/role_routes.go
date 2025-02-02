@@ -17,7 +17,7 @@ func RoleRoutes(app *fiber.App, roleHandler *handlers.RoleHandler) {
 	roles.Get("/", roleHandler.ListRoles)
 	roles.Post("/", roleHandler.CreateRole)
 	roles.Put("/:id", roleHandler.UpdateRole)
-	roles.Delete("/:id", roleHandler.DeleteRole)
+	roles.Delete("/:id", roleHandler.SoftDeleteRole)
 
 	roles.Get("/:id", roleHandler.GetRoleByID)
 }
