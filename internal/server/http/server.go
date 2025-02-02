@@ -7,6 +7,7 @@ import (
 	"go-modules-api/internal/server/http/middleware"
 	"go-modules-api/internal/server/http/routes"
 
+	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"go.uber.org/zap"
@@ -22,6 +23,8 @@ func NewServer(log *zap.Logger) *Server {
 		AppName:      "go-modules-api",
 		BodyLimit:    1024 * 1024 * 1024, // 1GB
 		ErrorHandler: middleware.ErrorHandler,
+		JSONEncoder:  json.Marshal,
+		JSONDecoder:  json.Unmarshal,
 	})
 
 	app.Use(cors.New(cors.Config{
