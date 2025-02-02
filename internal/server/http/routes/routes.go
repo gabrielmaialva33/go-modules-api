@@ -16,5 +16,6 @@ func SetupRoutes(app *fiber.App, log *zap.Logger, container *container.AppContai
 	})
 
 	HubClientsRoutes(app, container.Handlers.HubClientHandler)
+	RoleRoutes(app, container.Handlers.RoleHandler)
 
 }
