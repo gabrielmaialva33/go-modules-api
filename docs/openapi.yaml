@@ -36,6 +36,8 @@ tags:
     description: Operations related to system health
   - name: HubClients
     description: Operations related to hub clients
+  - name: Roles
+    description: Operations related to roles
 paths:
   # hub_clients
   /api/hub_clients/paginate:
@@ -270,6 +272,227 @@ paths:
           description: Invalid ID supplied.
         '500':
           description: Failed to delete the hub client.
+
+  # role
+  /api/roles/paginate:
+    get:
+      tags:
+        - Roles
+      summary: Paginate roles
+      description: Returns a paginated list of roles with filtering and sorting options.
+      operationId: paginateRoles
+      parameters:
+        - name: search
+          in: query
+          description: Filter by role name (partial match).
+          schema:
+            type: string
+        - name: active
+          in: query
+          description: Filter by active status (`true` or `false`).
+          schema:
+            type: boolean
+        - name: sort_field
+          in: query
+          description: Field to sort by.
+          schema:
+            type: string
+            enum: [ id, name, active, created_at, updated_at ]
+            default: id
+        - name: sort_order
+          in: query
+          description: Sorting direction (`asc` or `desc`).
+          schema:
+            type: string
+            enum: [ asc, desc ]
+            default: asc
+        - name: page
+          in: query
+          description: Page number (for pagination).
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          description: Number of results per page.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Paginated list of roles.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Role'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+  /api/roles:
+    get:
+      tags:
+        - Roles
+      summary: List roles
+      description: Returns a list of all roles in the system.
+      operationId: listRoles
+      parameters:
+        - name: search
+          in: query
+          description: Filter by role name (partial match).
+          schema:
+            type: string
+        - name: active
+          in: query
+          description: Filter by active status (`true` or `false`).
+          schema:
+            type: boolean
+        - name: sort_field
+          in: query
+          description: Field to sort by.
+          schema:
+            type: string
+            enum: [ id, name, active, created_at, updated_at ]
+            default: id
+        - name: sort_order
+          in: query
+          description: Sorting direction (`asc` or `desc`).
+          schema:
+            type: string
+            enum: [ asc, desc ]
+            default: asc
+      responses:
+        '200':
+          description: List of roles.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+        '401':
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+    post:
+      tags:
+        - Roles
+      summary: Create role
+      description: Creates a new role in the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleInput'
+      responses:
+        '201':
+          description: Role created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+        '500':
+          description: Failed to create the role.
+  /api/roles/{id}:
+    get:
+      tags:
+        - Roles
+      summary: Get role by ID
+      description: Retrieves details of a specific role by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the role.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Role details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          description: Invalid ID provided.
+        '404':
+          description: Role not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Failed to retrieve the role.
+    put:
+      tags:
+        - Roles
+      summary: Update role
+      description: Updates details of an existing role.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the role to update.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleInput'
+      responses:
+        '200':
+          description: Role updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          description: Invalid request or ID.
+        '500':
+          description: Failed to update the role.
+    delete:
+      tags:
+        - Roles
+      summary: Delete role
+      description: Deletes a role by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the role to delete.
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Role deleted successfully.
+        '400':
+          description: Invalid ID provided.
+        '500':
+          description: Failed to delete the role.
+
 components:
   securitySchemes:
     bearerToken:
@@ -379,6 +602,75 @@ components:
         'name': 'Client A',
         'external_id': '123',
       }
+
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier for the role.
+          example: 1
+        name:
+          type: string
+          description: The name of the role.
+          example: "Admin"
+        slug:
+          type: string
+          description: The slug of the role.
+          example: "admin"
+        active:
+          type: boolean
+          description: Indicates whether the role is active.
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          description: When the role was created.
+          example: "2025-02-01T18:08:26.599656-03:00"
+        updated_at:
+          type: string
+          format: date-time
+          description: When the role was last updated.
+          example: "2025-02-01T18:08:26.599656-03:00"
+      example: {
+        'id': 1,
+        'name': 'Admin',
+        'slug': 'admin',
+        'active': true,
+        'created_at': '2025-02-01T18:08:26.599656-03:00',
+        'updated_at': '2025-02-01T18:08:26.599656-03:00',
+      }
+    CreateRoleInput:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the role.
+          example: "Admin"
+        slug:
+          type: string
+          description: The slug of the role.
+          example: "admin"
+      example: {
+        'name': 'Admin',
+        'slug': 'admin',
+      }
+    UpdateRoleInput:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the role.
+          example: "Admin"
+        slug:
+          type: string
+          description: The slug of the role.
+          example: "admin"
+      example: {
+        'name': 'Admin',
+        'slug': 'admin',
+      }
+
 
     PaginationMeta:
       type: object
