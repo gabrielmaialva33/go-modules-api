@@ -46,7 +46,7 @@ func (r *hubClientRepository) Create(hubClient *models.HubClient) error {
 
 // Update modifies an existing hub client
 func (r *hubClientRepository) Update(hubClient *models.HubClient) error {
-	return config.DB.Save(hubClient).Error
+	return config.DB.Where("id = ?", hubClient.ID).Updates(hubClient).Error
 }
 
 // Delete removes a hub client from the database
