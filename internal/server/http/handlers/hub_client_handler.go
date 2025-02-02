@@ -178,7 +178,7 @@ func (h *HubClientHandler) UpdateHubClient(c *fiber.Ctx) error {
 
 	// Update entity with new values
 	client := &models.HubClient{
-		ID:         uint(id),
+		BaseID:     models.BaseID{ID: uint(id)},
 		Name:       payload.Name,
 		ExternalID: payload.ExternalID,
 	}
