@@ -128,18 +128,19 @@ func TestHubClientRepository_GetByID(t *testing.T) {
 		expectError bool
 	}{
 		{"success", func() {
-			mock.ExpectQuery(`SELECT \* FROM "hub_clients" WHERE "hub_clients"."id" = \$1 ORDER BY "hub_clients"."id" LIMIT \$2`).
-				WithArgs(1, 1).
+			// Atualize o regex para incluir a condição is_deleted = false e o LIMIT $3.
+			mock.ExpectQuery(`SELECT \* FROM "hub_clients" WHERE "hub_clients"."id" = \$1 AND is_deleted = \$2 ORDER BY "hub_clients"."id" LIMIT \$3`).
+				WithArgs(1, false, 1).
 				WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 		}, 1, false},
 		{"not_found", func() {
-			mock.ExpectQuery(`SELECT \* FROM "hub_clients" WHERE "hub_clients"."id" = \$1 ORDER BY "hub_clients"."id" LIMIT \$2`).
-				WithArgs(1, 1).
+			mock.ExpectQuery(`SELECT \* FROM "hub_clients" WHERE "hub_clients"."id" = \$1 AND is_deleted = \$2 ORDER BY "hub_clients"."id" LIMIT \$3`).
+				WithArgs(1, false, 1).
 				WillReturnRows(sqlmock.NewRows([]string{"id"}))
 		}, 1, true},
 		{"db_error", func() {
-			mock.ExpectQuery(`SELECT \* FROM "hub_clients" WHERE "hub_clients"."id" = \$1 ORDER BY "hub_clients"."id" LIMIT \$2`).
-				WithArgs(1, 1).
+			mock.ExpectQuery(`SELECT \* FROM "hub_clients" WHERE "hub_clients"."id" = \$1 AND is_deleted = \$2 ORDER BY "hub_clients"."id" LIMIT \$3`).
+				WithArgs(1, false, 1).
 				WillReturnError(gorm.ErrInvalidData)
 		}, 1, true},
 	}
@@ -251,6 +252,7 @@ func TestHubClientRepository_Delete(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
+	// Abra o GORM com o driver postgres
 	gormDB, err := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
 	assert.NoError(t, err)
 
@@ -266,8 +268,8 @@ func TestHubClientRepository_Delete(t *testing.T) {
 			"success",
 			func() {
 				mock.ExpectBegin()
-				mock.ExpectExec(`DELETE FROM "hub_clients"`).
-					WithArgs(1).
+				mock.ExpectExec(`DELETE FROM "hub_clients" WHERE "hub_clients"."id" = \$1 AND is_deleted = \$2`).
+					WithArgs(1, false).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 				mock.ExpectCommit()
 			},
@@ -277,8 +279,8 @@ func TestHubClientRepository_Delete(t *testing.T) {
 			"db_error",
 			func() {
 				mock.ExpectBegin()
-				mock.ExpectExec(`DELETE FROM "hub_clients"`).
-					WithArgs(1).
+				mock.ExpectExec(`DELETE FROM "hub_clients" WHERE "hub_clients"."id" = \$1 AND is_deleted = \$2`).
+					WithArgs(1, false).
 					WillReturnError(gorm.ErrInvalidTransaction)
 				mock.ExpectRollback()
 			},
