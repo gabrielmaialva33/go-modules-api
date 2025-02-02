@@ -42,7 +42,7 @@ paths:
     get:
       tags:
         - HubClients
-      summary: Get paginated list of hub clients
+      summary: Paginate hub clients
       description: Returns a paginated list of hub clients with sorting and filtering options.
       operationId: paginateHubClients
       parameters:
@@ -109,7 +109,7 @@ paths:
     get:
       tags:
         - HubClients
-      summary: List all hub clients
+      summary: List hub clients
       description: |
         Returns a list of all hub clients.
       operationId: listHubClients
@@ -162,7 +162,7 @@ paths:
     post:
       tags:
         - HubClients
-      summary: Create a new hub client
+      summary: Create hub client
       description: Creates a new hub client in the system.
       parameters:
         - name: Content-Type
@@ -196,7 +196,7 @@ paths:
     get:
       tags:
         - HubClients
-      summary: Get hub client by ID
+      summary: Get hub client
       description: Retrieves the details of a specific hub client using its ID.
       parameters:
         - name: id
@@ -225,7 +225,7 @@ paths:
     put:
       tags:
         - HubClients
-      summary: Update a hub client
+      summary: Update hub client
       description: Updates the details of an existing hub client.
       parameters:
         - name: id
@@ -254,7 +254,7 @@ paths:
     delete:
       tags:
         - HubClients
-      summary: Delete a hub client
+      summary: Delete hub client
       description: Deletes a hub client with the given ID.
       parameters:
         - name: id
