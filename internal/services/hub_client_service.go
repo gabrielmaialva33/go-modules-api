@@ -8,7 +8,7 @@ import (
 
 // HubClientService defines business logic for hub clients
 type HubClientService interface {
-	GetAllHubClients() ([]models.HubClient, error)
+	GetAllHubClients(search string, active *bool, sortField string, sortOrder string) ([]models.HubClient, error)
 	GetHubClientByID(id uint) (*models.HubClient, error)
 	CreateHubClient(hubClient *models.HubClient) error
 	UpdateHubClient(hubClient *models.HubClient) error
@@ -23,9 +23,9 @@ func NewHubClientService(repo repositories.HubClientRepository) HubClientService
 	return &hubClientService{repo: repo}
 }
 
-// GetAllHubClients returns all hub clients
-func (s *hubClientService) GetAllHubClients() ([]models.HubClient, error) {
-	clients, err := s.repo.GetAll()
+// GetAllHubClients returns all hub clients with filtering and sorting
+func (s *hubClientService) GetAllHubClients(search string, active *bool, sortField string, sortOrder string) ([]models.HubClient, error) {
+	clients, err := s.repo.GetAll(search, active, sortField, sortOrder)
 	return clients, utils.HandleDBError(err)
 }
 
