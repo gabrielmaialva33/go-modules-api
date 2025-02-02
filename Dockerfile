@@ -33,5 +33,8 @@ WORKDIR /root/
 COPY --from=builder /app/bin/go-modules-api /bin/go-modules-api
 COPY --from=builder /app/.env .env
 
+# Copy the docs folder so the binary finds ./docs/redoc.html
+COPY --from=builder /app/docs /root/docs
+
 # Default command to run the binary
 CMD ["/bin/go-modules-api"]
