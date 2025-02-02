@@ -37,6 +37,75 @@ tags:
   - name: HubClients
     description: Operations related to hub clients
 paths:
+
+  /api/hub_clients/paginate:
+    get:
+      tags:
+        - HubClients
+      summary: Get paginated list of hub clients
+      description: Returns a paginated list of hub clients with sorting and filtering options.
+      operationId: paginateHubClients
+      parameters:
+        - name: search
+          in: query
+          description: Filter by client name (partial match).
+          schema:
+            type: string
+        - name: active
+          in: query
+          description: Filter by active status (`true` or `false`).
+          schema:
+            type: boolean
+        - name: sort_field
+          in: query
+          description: Field to sort by.
+          schema:
+            type: string
+            enum: [ id, name, active, external_id, created_at, updated_at ]
+            default: id
+        - name: sort_order
+          in: query
+          description: Sorting direction (`asc` or `desc`).
+          schema:
+            type: string
+            enum: [ asc, desc ]
+            default: asc
+        - name: page
+          in: query
+          description: Page number (for pagination).
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          description: Number of results per page.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Paginated list of hub clients.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HubClient'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+
   /api/hub_clients:
     get:
       tags:
@@ -45,6 +114,13 @@ paths:
       description: |
         Returns a list of all hub clients.
       operationId: listHubClients
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
       responses:
         '200':
           description: A list of hub clients
@@ -72,7 +148,6 @@ paths:
           schema:
             type: string
             default: application/json
-          example: application/json
       requestBody:
         required: true
         content:
@@ -276,3 +351,31 @@ components:
         'name': 'Client A',
         'external_id': 123,
       }
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+        current_page:
+          type: integer
+        per_page:
+          type: integer
+        total_pages:
+          type: integer
+        has_more:
+          type: boolean
+        has_previous:
+          type: boolean
+        is_empty:
+          type: boolean
+        first_page_url:
+          type: string
+        next_page_url:
+          type: string
+          nullable: true
+        last_page_url:
+          type: string
+        previous_page_url:
+          type: string
+          nullable: true
